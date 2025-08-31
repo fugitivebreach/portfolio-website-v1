@@ -21,6 +21,59 @@
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
+
+    .discord-info {
+        margin: 1rem 0;
+        padding: 1rem;
+        background-color: rgba(0, 191, 255, 0.1);
+        border: 1px solid #00bfff;
+        border-radius: 8px;
+    }
+
+    .discord-info p {
+        margin: 0.5rem 0;
+        color: #cccccc;
+        font-size: 0.9rem;
+    }
+
+    .discord-id {
+        font-family: monospace;
+        color: #00bfff !important;
+    }
+
+    .description-editor {
+        margin-top: 1rem;
+    }
+
+    .description-editor textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 1rem;
+        background-color: #222222;
+        border: 2px solid #333333;
+        border-radius: 8px;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 1rem;
+        resize: vertical;
+    }
+
+    .description-editor textarea:focus {
+        outline: none;
+        border-color: #00bfff;
+    }
+
+    .save-indicator {
+        margin-top: 0.5rem;
+        color: #28a745;
+        font-size: 0.9rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .save-indicator.show {
+        opacity: 1;
+    }
 </style>
 <script>
 // Apply tag colors when page loads
@@ -39,8 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="profile-container">
     <div class="profile-header">
         <div class="profile-info">
-            {% if user.avatar %}
-                <img src="https://cdn.discordapp.com/avatars/{{ user.discord_id }}/{{ user.avatar }}.png" 
+            {% if current_user.avatar %}
+                <img src="https://cdn.discordapp.com/avatars/{{ current_user.id }}/{{ current_user.avatar }}.png" 
                      alt="Avatar" class="profile-avatar">
             {% else %}
                 <div class="profile-avatar-placeholder">
@@ -49,18 +102,22 @@ document.addEventListener('DOMContentLoaded', function() {
             {% endif %}
             <div class="profile-details">
                 <div class="username-container">
-                    <h1>{{ user.username }}</h1>
+                    <h1>{{ current_user.username }}</h1>
                     {% if current_user.tag %}
                         <span class="user-tag" data-tag-color="{{ current_user.tag.color }}">
                             {{ current_user.tag.name }}
                         </span>
                     {% endif %}
                 </div>
+                <div class="discord-info">
+                    <p class="discord-id">Discord ID: {{ current_user.id }}</p>
+                    <p class="last-login">Last Login: {{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') if current_user.last_login else 'Never' }}</p>
+                </div>
                 <div class="profile-settings">
                     <label for="profileVisibility">Profile Visibility:</label>
                     <select id="profileVisibility" onchange="updateProfileVisibility()">
-                        <option value="public" {% if user.profile_visibility == 'public' %}selected{% endif %}>Public</option>
-                        <option value="private" {% if user.profile_visibility == 'private' %}selected{% endif %}>Private</option>
+                        <option value="public" {% if current_user.profile_visibility == 'public' %}selected{% endif %}>Public</option>
+                        <option value="private" {% if current_user.profile_visibility == 'private' %}selected{% endif %}>Private</option>
                     </select>
                 </div>
             </div>
@@ -78,7 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <h3>Description</h3>
             <div class="description-editor">
                 <textarea id="profileDescription" placeholder="Tell others about yourself..." 
-                         onchange="updateDescription()">{{ user.description }}</textarea>
+                         onchange="updateDescription()">{{ current_user.description or '' }}</textarea>
+                <div id="saveIndicator" class="save-indicator">✓ Saved</div>
             </div>
         </div>
 
@@ -407,6 +465,7 @@ function updateProfileVisibility() {
 
 function updateDescription() {
     const description = document.getElementById('profileDescription').value;
+    const saveIndicator = document.getElementById('saveIndicator');
     
     fetch('/api/update_profile', {
         method: 'POST',
@@ -420,7 +479,10 @@ function updateDescription() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            console.log('Description updated');
+            saveIndicator.classList.add('show');
+            setTimeout(() => {
+                saveIndicator.classList.remove('show');
+            }, 2000);
         }
     });
 }

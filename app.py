@@ -360,7 +360,7 @@ def update_profile():
     
     if update_data:
         mongo.db.users.update_one(
-            {'_id': ObjectId(current_user.id)},
+            {'discord_id': current_user.id},
             {'$set': update_data}
         )
         return jsonify({'success': True})
