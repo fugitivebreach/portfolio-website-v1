@@ -335,13 +335,22 @@ def profile():
 @app.route('/profile/<user_id>')
 def public_profile(user_id):
     try:
-        user_data = mongo.db.users.find_one({'_id': ObjectId(user_id)})
+        # Try to find by discord_id first (for direct discord ID links)
+        user_data = mongo.db.users.find_one({'discord_id': user_id})
+        
+        # If not found, try by MongoDB ObjectId (for legacy links)
+        if not user_data:
+            try:
+                user_data = mongo.db.users.find_one({'_id': ObjectId(user_id)})
+            except:
+                pass
+        
         if not user_data or user_data.get('profile_visibility') == 'private':
             flash('Profile not found or private.', 'error')
             return redirect(url_for('index'))
         
         user = User(user_data)
-        user_portfolios = list(mongo.db.portfolios.find({'user_id': user_id}))
+        user_portfolios = list(mongo.db.portfolios.find({'user_id': user_data['discord_id']}))
         return render_template('public_profile.html', user=user, portfolios=user_portfolios)
     except:
         flash('Profile not found.', 'error')
