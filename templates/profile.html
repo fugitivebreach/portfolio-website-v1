@@ -74,6 +74,34 @@
     .save-indicator.show {
         opacity: 1;
     }
+
+    .visibility-controls {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-top: 0.5rem;
+    }
+
+    .visibility-controls select {
+        flex: 1;
+        padding: 0.5rem;
+        background-color: #222222;
+        border: 2px solid #333333;
+        border-radius: 6px;
+        color: #ffffff;
+    }
+
+    .visibility-controls select:focus {
+        outline: none;
+        border-color: #00bfff;
+    }
+
+    .description-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
 </style>
 <script>
 // Apply tag colors when page loads
@@ -115,16 +143,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="profile-settings">
                     <label for="profileVisibility">Profile Visibility:</label>
-                    <select id="profileVisibility" onchange="updateProfileVisibility()">
-                        <option value="public" {% if current_user.profile_visibility == 'public' %}selected{% endif %}>Public</option>
-                        <option value="private" {% if current_user.profile_visibility == 'private' %}selected{% endif %}>Private</option>
-                    </select>
+                    <div class="visibility-controls">
+                        <select id="profileVisibility">
+                            <option value="public" {% if current_user.profile_visibility == 'public' %}selected{% endif %}>Public</option>
+                            <option value="private" {% if current_user.profile_visibility == 'private' %}selected{% endif %}>Private</option>
+                        </select>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="saveVisibility()">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                    <div id="visibilityIndicator" class="save-indicator">✓ Visibility Saved</div>
                 </div>
             </div>
         </div>
         
         <div class="profile-actions">
-            <a href="/profile/{{ user.id }}" class="btn btn-secondary">
+            <a href="/profile/{{ current_user.id }}" class="btn btn-secondary">
                 <i class="fas fa-eye"></i> View Public Profile
             </a>
         </div>
@@ -134,9 +168,13 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="profile-section">
             <h3>Description</h3>
             <div class="description-editor">
-                <textarea id="profileDescription" placeholder="Tell others about yourself..." 
-                         onchange="updateDescription()">{{ current_user.description or '' }}</textarea>
-                <div id="saveIndicator" class="save-indicator">✓ Saved</div>
+                <textarea id="profileDescription" placeholder="Tell others about yourself...">{{ current_user.description or '' }}</textarea>
+                <div class="description-controls">
+                    <button type="button" class="btn btn-primary" onclick="saveDescription()">
+                        <i class="fas fa-save"></i> Save Description
+                    </button>
+                    <div id="saveIndicator" class="save-indicator">✓ Description Saved</div>
+                </div>
             </div>
         </div>
 
@@ -443,8 +481,9 @@ document.addEventListener('DOMContentLoaded', function() {
 </style>
 
 <script>
-function updateProfileVisibility() {
+function saveVisibility() {
     const visibility = document.getElementById('profileVisibility').value;
+    const visibilityIndicator = document.getElementById('visibilityIndicator');
     
     fetch('/api/update_profile', {
         method: 'POST',
@@ -458,12 +497,15 @@ function updateProfileVisibility() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            console.log('Profile visibility updated');
+            visibilityIndicator.classList.add('show');
+            setTimeout(() => {
+                visibilityIndicator.classList.remove('show');
+            }, 2000);
         }
     });
 }
 
-function updateDescription() {
+function saveDescription() {
     const description = document.getElementById('profileDescription').value;
     const saveIndicator = document.getElementById('saveIndicator');
     

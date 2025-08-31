@@ -21,6 +21,59 @@
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
+
+    .discord-info {
+        margin: 1rem 0;
+        padding: 1rem;
+        background-color: rgba(0, 191, 255, 0.1);
+        border: 1px solid #00bfff;
+        border-radius: 8px;
+    }
+
+    .discord-info p {
+        margin: 0.5rem 0;
+        color: #cccccc;
+        font-size: 0.9rem;
+    }
+
+    .discord-id {
+        font-family: monospace;
+        color: #00bfff !important;
+    }
+
+    .profile-description-section {
+        margin: 1rem 0;
+        padding: 1rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+    }
+
+    .profile-description-section h4 {
+        color: #00bfff;
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
+    }
+
+    .profile-description {
+        color: #cccccc;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .private-profile-message {
+        margin: 1rem 0;
+        padding: 1rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid #666666;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .private-profile-message p {
+        color: #888888;
+        font-style: italic;
+        margin: 0;
+    }
 </style>
 {% endblock %}
 
@@ -70,13 +123,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                     {% endif %}
                 </div>
-                {% if user.description %}
-                    <p class="profile-description">{{ user.description }}</p>
+                {% if not is_private %}
+                    <div class="discord-info">
+                        <p class="discord-id">Discord ID: {{ user.id }}</p>
+                        <p class="last-login">Last Login: {{ user.last_login.strftime('%B %d, %Y at %I:%M %p') if user.last_login else 'Never' }}</p>
+                    </div>
+                    {% if user.description %}
+                        <div class="profile-description-section">
+                            <h4>About</h4>
+                            <p class="profile-description">{{ user.description }}</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="private-profile-message">
+                        <p>This profile is private.</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
+    {% if not is_private %}
     <div class="profile-content">
         <div class="profile-section">
             <h3>Portfolios ({{ portfolios|length }})</h3>
@@ -90,22 +157,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="fas fa-eye"></i> View
                         </a>
                     </div>
-                    <div class="portfolio-preview" data-bg-color="{{ portfolio.background_color or '#000000' }}">
-                        <div class="portfolio-elements">
-                            {% for element in portfolio.elements[:3] %}
-                                <div class="element-preview">
-                                    {% if element.type == 'text_short' %}
-                                        <div class="text-preview">{{ (element.properties.text or '')[:30] }}...</div>
-                                    {% elif element.type == 'image' %}
-                                        <div class="image-preview">📷</div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                        </div>
+                    <div class="portfolio-preview" data-bg-color="{{ portfolio.background_color }}">
+                        <i class="fas fa-file-alt"></i>
                     </div>
-                    <div class="portfolio-meta">
-                        <span class="template-badge">{{ portfolio.template }}</span>
-                        <span class="element-count">{{ portfolio.elements|length }} elements</span>
+                    <div class="portfolio-info">
+                        <div class="portfolio-stats">
+                            <span class="portfolio-rating">
+                                <i class="fas fa-star"></i> {{ "%.1f"|format(portfolio.average_rating or 0) }}
+                            </span>
+                            <span class="portfolio-reviews">{{ portfolio.review_count or 0 }} reviews</span>
+                        </div>
+                        <p class="portfolio-description">{{ portfolio.description or 'No description available.' }}</p>
                     </div>
                 </div>
                 {% endfor %}
@@ -113,13 +175,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% if portfolios|length == 0 %}
                 <div class="empty-state">
                     <i class="fas fa-folder-open"></i>
-                    <h4>No public portfolios</h4>
-                    <p>This user hasn't created any portfolios yet.</p>
+                    <h4>No portfolios yet</h4>
+                    <p>This user hasn't created any portfolios.</p>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 
 <style>

@@ -345,11 +345,15 @@ def public_profile(user_id):
             except:
                 pass
         
-        if not user_data or user_data.get('profile_visibility') == 'private':
-            flash('Profile not found or private.', 'error')
+        if not user_data:
+            flash('Profile not found.', 'error')
             return redirect(url_for('index'))
         
         user = User(user_data)
+        
+        # If profile is private, show limited info
+        if user_data.get('profile_visibility') == 'private':
+            return render_template('public_profile.html', user=user, portfolios=[], is_private=True)
         user_portfolios = list(mongo.db.portfolios.find({'user_id': user_data['discord_id']}))
         return render_template('public_profile.html', user=user, portfolios=user_portfolios)
     except:
