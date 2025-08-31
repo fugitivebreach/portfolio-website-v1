@@ -1,0 +1,86 @@
+{% extends "create.html" %}
+
+{% block title %}Edit Portfolio - Portfolio Hub{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+    // Load existing portfolio data
+    document.addEventListener('DOMContentLoaded', function() {
+        loadExistingPortfolio();
+    });
+
+    function loadExistingPortfolio() {
+        try {
+            var portfolioData = JSON.parse('{{ portfolio | tojson | safe }}');
+            
+            // Set form values
+            document.getElementById('portfolioTitle').value = portfolioData.title || 'My Portfolio';
+            document.getElementById('backgroundColor').value = portfolioData.background_color || '#000000';
+            document.getElementById('canvas').style.setProperty('--bg-color', portfolioData.background_color || '#000000');
+            
+            // Set template
+            currentTemplate = portfolioData.template || 'modern';
+            selectTemplate(currentTemplate);
+            
+            // Load elements
+            elements = portfolioData.elements || [];
+            elementCounter = elements.length;
+            
+            // Clear canvas and render elements
+            var canvas = document.getElementById('canvas');
+            canvas.innerHTML = '';
+            elements.forEach(function(element) {
+                renderElement(element);
+            });
+        } catch (error) {
+            console.error('Error loading portfolio data:', error);
+        }
+    }
+
+    // Override save function to include portfolio ID and redirect to homepage
+    function savePortfolio() {
+        // Prevent multiple saves in progress
+        if (window.saveInProgress) {
+            return;
+        }
+        window.saveInProgress = true;
+        
+        var portfolioData = {
+            portfolio_id: '{{ portfolio._id | string }}',
+            title: document.getElementById('portfolioTitle').value,
+            template: currentTemplate,
+            background_color: document.getElementById('backgroundColor').value,
+            elements: elements
+        };
+
+        fetch('/api/save_portfolio', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(portfolioData)
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            window.saveInProgress = false;
+            if (data.success) {
+                showSaveStatus();
+                // Redirect to homepage after saving changes
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
+            } else {
+                alert('Failed to save portfolio: ' + data.error);
+            }
+        })
+        .catch(function(error) {
+            window.saveInProgress = false;
+            console.error('Error:', error);
+            alert('Failed to save portfolio');
+        });
+    }
+</script>
+{% endblock %}

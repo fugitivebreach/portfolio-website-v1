@@ -1,0 +1,1008 @@
+{% extends "base.html" %}
+
+{% block title %}Create Portfolio - Portfolio Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-container {
+        display: flex;
+        gap: 2rem;
+        min-height: calc(100vh - 200px);
+    }
+
+    .sidebar {
+        width: 300px;
+        background-color: #111111;
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .sidebar-section {
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-title {
+        color: #00bfff;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .template-selector {
+        display: grid;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .template-option {
+        padding: 0.75rem;
+        background-color: #222222;
+        border: 2px solid #333333;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .template-option:hover,
+    .template-option.active {
+        border-color: #00bfff;
+        background-color: rgba(0, 191, 255, 0.1);
+    }
+
+    .template-name {
+        color: #ffffff;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .template-desc {
+        color: #cccccc;
+        font-size: 0.8rem;
+    }
+
+    .elements-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .element-item {
+        padding: 0.75rem;
+        background-color: #222222;
+        border: 2px solid #333333;
+        border-radius: 8px;
+        cursor: grab;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .element-item:hover {
+        border-color: #00bfff;
+        transform: translateY(-2px);
+    }
+
+    .element-item:active {
+        cursor: grabbing;
+    }
+
+    .element-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .element-name {
+        color: #ffffff;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .settings-section {
+        border-top: 1px solid #333333;
+        padding-top: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        color: #00bfff;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.5rem;
+        background-color: #222222;
+        border: 2px solid #333333;
+        border-radius: 6px;
+        color: #ffffff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #00bfff;
+    }
+
+    .color-picker {
+        width: 100%;
+        height: 40px;
+        border: 2px solid #333333;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .canvas-container {
+        flex: 1;
+        background-color: #111111;
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .canvas-header {
+        background-color: #222222;
+        padding: 1rem;
+        border-bottom: 1px solid #333333;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+    }
+
+    .canvas-title {
+        color: #00bfff;
+        font-weight: 600;
+    }
+
+    .canvas-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 6px;
+    }
+
+    .canvas {
+        min-height: 600px;
+        position: relative;
+        padding: 2rem;
+        background-color: var(--bg-color, #000000);
+        transition: background-color 0.3s ease;
+    }
+
+    .canvas.drag-over {
+        background-color: rgba(0, 191, 255, 0.1);
+    }
+
+    .canvas-element {
+        position: absolute;
+        border: 2px solid transparent;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .canvas-element:hover,
+    .canvas-element.selected {
+        border-color: #00bfff;
+        background-color: rgba(0, 191, 255, 0.1);
+    }
+
+    .element-controls {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        display: none;
+        gap: 0.25rem;
+        z-index: 10;
+    }
+
+    .canvas-element:hover .element-controls,
+    .canvas-element.selected .element-controls {
+        display: flex;
+    }
+
+    .control-btn {
+        width: 24px;
+        height: 24px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .control-btn.move-up,
+    .control-btn.move-down {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .control-btn.edit-btn {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .control-btn.delete-btn {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .control-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .text-element {
+        color: #ffffff;
+        background-color: transparent;
+        border: none;
+        outline: none;
+        resize: none;
+        font-family: inherit;
+        width: 100%;
+        height: 100%;
+    }
+
+    .text-short {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .text-long {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .image-element {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .button-element {
+        background-color: #00bfff;
+        color: #000000;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .divider-element {
+        width: 100%;
+        height: 2px;
+        background-color: #00bfff;
+        border: none;
+    }
+
+    .save-status {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+    }
+
+    .edit-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .edit-modal-content {
+        background: #1a1a1a;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 500px;
+        border: 1px solid #333;
+    }
+
+    .edit-modal-header {
+        padding: 1rem;
+        border-bottom: 1px solid #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .edit-modal-header h3 {
+        margin: 0;
+        color: #00bfff;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: #ccc;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .edit-modal-body {
+        padding: 1.5rem;
+    }
+
+    .edit-modal-body label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #ccc;
+        font-weight: bold;
+    }
+
+    .edit-modal-body input,
+    .edit-modal-body textarea {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        background: #333;
+        border: 1px solid #555;
+        border-radius: 5px;
+        color: #fff;
+        font-family: inherit;
+    }
+
+    .edit-modal-footer {
+        padding: 1rem;
+        border-top: 1px solid #333;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 1024px) {
+        .create-container {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            position: static;
+        }
+
+        .elements-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-container">
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">
+                <i class="fas fa-palette"></i>
+                Template
+            </h3>
+            <div class="template-selector" id="templateSelector">
+                <!-- Templates will be loaded here -->
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">
+                <i class="fas fa-plus"></i>
+                Elements
+            </h3>
+            <div class="elements-grid" id="elementsGrid">
+                <!-- Elements will be loaded here -->
+            </div>
+        </div>
+
+        <div class="sidebar-section settings-section">
+            <h3 class="sidebar-title">
+                <i class="fas fa-cog"></i>
+                Settings
+            </h3>
+            <div class="form-group">
+                <label for="portfolioTitle">Portfolio Title</label>
+                <input type="text" id="portfolioTitle" placeholder="My Awesome Portfolio" value="My Portfolio">
+            </div>
+            <div class="form-group">
+                <label for="backgroundColor">Background Color</label>
+                <input type="color" id="backgroundColor" class="color-picker" value="#000000">
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <button class="btn btn-primary" onclick="savePortfolio()" style="width: 100%;">
+                <i class="fas fa-save"></i> Save Portfolio
+            </button>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <div class="canvas-header">
+            <div class="canvas-title">Portfolio Canvas</div>
+            <div class="canvas-actions">
+                <button class="btn btn-small" onclick="previewPortfolio()">
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+                <button class="btn btn-small" onclick="clearCanvas()">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+        </div>
+        <div class="canvas" id="canvas" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div style="text-align: center; color: #666666; margin-top: 200px;">
+                <i class="fas fa-mouse-pointer" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>Drag elements from the sidebar to start building your portfolio</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="save-status" id="saveStatus">
+    <i class="fas fa-check"></i> Portfolio saved!
+</div>
+
+<!-- Element Property Modal -->
+<div id="propertyModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Element Properties</h3>
+            <span class="close" onclick="closePropertyModal()">&times;</span>
+        </div>
+        <div class="modal-body" id="propertyModalBody">
+            <!-- Properties will be loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentTemplate = 'modern';
+    let elements = [];
+    let selectedElement = null;
+    let draggedElementType = null;
+    let elementCounter = 0;
+
+    // Load configuration and initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        loadConfig();
+        setupEventListeners();
+    });
+
+    function loadConfig() {
+        fetch('/static/config.json')
+            .then(response => response.json())
+            .then(config => {
+                loadTemplates(config.portfolio_templates);
+                loadElements(config.element_types);
+            })
+            .catch(error => {
+                console.error('Error loading config:', error);
+                // Fallback configuration
+                loadTemplates([
+                    {id: 'modern', name: 'Modern Portfolio', description: 'Clean and minimalist'},
+                    {id: 'creative', name: 'Creative Portfolio', description: 'Bold and artistic'},
+                    {id: 'professional', name: 'Professional Portfolio', description: 'Corporate style'},
+                    {id: 'developer', name: 'Developer Portfolio', description: 'Tech-focused'}
+                ]);
+                loadElements([
+                    {type: 'text_short', name: 'Short Text', icon: '📝'},
+                    {type: 'text_long', name: 'Long Text', icon: '📄'},
+                    {type: 'image', name: 'Image', icon: '🖼️'},
+                    {type: 'button', name: 'Button', icon: '🔘'},
+                    {type: 'divider', name: 'Divider', icon: '➖'}
+                ]);
+            });
+    }
+
+    function loadTemplates(templates) {
+        const selector = document.getElementById('templateSelector');
+        selector.innerHTML = '';
+        
+        templates.forEach((template, index) => {
+            const div = document.createElement('div');
+            div.className = `template-option ${index === 0 ? 'active' : ''}`;
+            div.dataset.template = template.id;
+            div.innerHTML = `
+                <div class="template-name">${template.name}</div>
+                <div class="template-desc">${template.description}</div>
+            `;
+            div.onclick = () => selectTemplate(template.id);
+            selector.appendChild(div);
+        });
+    }
+
+    function loadElements(elementTypes) {
+        const grid = document.getElementById('elementsGrid');
+        grid.innerHTML = '';
+        
+        elementTypes.forEach(element => {
+            const div = document.createElement('div');
+            div.className = 'element-item';
+            div.draggable = true;
+            div.dataset.type = element.type;
+            div.innerHTML = `
+                <div class="element-icon">${element.icon}</div>
+                <div class="element-name">${element.name}</div>
+            `;
+            div.ondragstart = (e) => dragStart(e, element.type);
+            grid.appendChild(div);
+        });
+    }
+
+    function selectTemplate(templateId) {
+        currentTemplate = templateId;
+        document.querySelectorAll('.template-option').forEach(opt => {
+            opt.classList.remove('active');
+        });
+        document.querySelector(`[data-template="${templateId}"]`).classList.add('active');
+    }
+
+    function setupEventListeners() {
+        // Background color change
+        document.getElementById('backgroundColor').addEventListener('change', function() {
+            document.getElementById('canvas').style.setProperty('--bg-color', this.value);
+        });
+
+        // Remove auto-save on title change
+    }
+
+    function dragStart(e, elementType) {
+        draggedElementType = elementType;
+        e.dataTransfer.effectAllowed = 'copy';
+    }
+
+    function allowDrop(e) {
+        e.preventDefault();
+        document.getElementById('canvas').classList.add('drag-over');
+    }
+
+    function drop(e) {
+        e.preventDefault();
+        document.getElementById('canvas').classList.remove('drag-over');
+        
+        if (!draggedElementType) return;
+
+        const canvas = document.getElementById('canvas');
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left - 50; // Center the element
+        const y = e.clientY - rect.top - 25;
+
+        createElement(draggedElementType, x, y);
+        draggedElementType = null;
+    }
+
+    function createElement(type, x, y) {
+        elementCounter++;
+        const id = `element_${elementCounter}`;
+        
+        const element = {
+            id: id,
+            type: type,
+            x: Math.max(0, x),
+            y: Math.max(0, y),
+            width: getDefaultWidth(type),
+            height: getDefaultHeight(type),
+            properties: getDefaultProperties(type)
+        };
+
+        elements.push(element);
+        renderElement(element);
+    }
+
+    function getDefaultWidth(type) {
+        switch(type) {
+            case 'text_short': return 300;
+            case 'text_long': return 400;
+            case 'image': return 200;
+            case 'button': return 150;
+            case 'divider': return 300;
+            default: return 200;
+        }
+    }
+
+    function getDefaultHeight(type) {
+        switch(type) {
+            case 'text_short': return 40;
+            case 'text_long': return 120;
+            case 'image': return 150;
+            case 'button': return 45;
+            case 'divider': return 2;
+            default: return 50;
+        }
+    }
+
+    function getDefaultProperties(type) {
+        switch(type) {
+            case 'text_short':
+                return { text: 'Your Title Here', fontSize: '1.2rem', fontWeight: '600' };
+            case 'text_long':
+                return { text: 'Your content goes here. You can write multiple lines of text to describe your work, experience, or anything else you want to share.', fontSize: '1rem' };
+            case 'image':
+                return { src: '', alt: 'Image' };
+            case 'button':
+                return { text: 'Click Me', link: '#', backgroundColor: '#00bfff', color: '#000000' };
+            case 'divider':
+                return { color: '#00bfff', thickness: '2px' };
+            default:
+                return {};
+        }
+    }
+
+    function renderElement(element) {
+        const div = document.createElement('div');
+        div.className = 'canvas-element';
+        div.id = `element-${element.id}`;
+        div.style.cssText = `
+            position: relative;
+            margin-bottom: 1rem;
+            width: 100%;
+            min-height: ${element.height}px;
+        `;
+        
+        div.innerHTML = `
+            <div class="element-controls">
+                <button class="control-btn move-up" onclick="moveElement('${element.id}', 'up')" title="Move Up">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <button class="control-btn move-down" onclick="moveElement('${element.id}', 'down')" title="Move Down">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+                <button class="control-btn edit-btn" onclick="editElement('${element.id}')" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="control-btn delete-btn" onclick="deleteElement('${element.id}')" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        const content = createElementContent(element);
+        div.appendChild(content);
+        
+        div.onclick = (e) => {
+            e.stopPropagation();
+            selectElement(element.id);
+        };
+
+        document.getElementById('canvas').appendChild(div);
+    }
+
+    function createElementContent(element) {
+        const content = document.createElement('div');
+        
+        switch(element.type) {
+            case 'text_short':
+                const shortText = document.createElement('input');
+                shortText.type = 'text';
+                shortText.className = 'text-element text-short';
+                shortText.value = element.properties.text;
+                shortText.onchange = () => updateElementProperty(element.id, 'text', shortText.value);
+                content.appendChild(shortText);
+                break;
+                
+            case 'text_long':
+                const longText = document.createElement('textarea');
+                longText.className = 'text-element text-long';
+                longText.value = element.properties.text;
+                longText.onchange = () => updateElementProperty(element.id, 'text', longText.value);
+                content.appendChild(longText);
+                break;
+                
+            case 'image':
+                if (element.properties.src) {
+                    const img = document.createElement('img');
+                    img.className = 'image-element';
+                    img.src = element.properties.src;
+                    img.alt = element.properties.alt;
+                    content.appendChild(img);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.style.cssText = 'border: 2px dashed #666; padding: 2rem; text-align: center; color: #666; cursor: pointer;';
+                    placeholder.innerHTML = '<i class="fas fa-image" style="font-size: 2rem; margin-bottom: 0.5rem;"></i><br>Click to upload image';
+                    placeholder.onclick = () => uploadImage(element.id);
+                    content.appendChild(placeholder);
+                }
+                break;
+                
+            case 'button':
+                const button = document.createElement('a');
+                button.className = 'button-element';
+                button.textContent = element.properties.text;
+                button.href = element.properties.link;
+                button.style.backgroundColor = element.properties.backgroundColor;
+                button.style.color = element.properties.color;
+                button.ondblclick = () => editElementProperties(element.id);
+                content.appendChild(button);
+                break;
+                
+            case 'divider':
+                const divider = document.createElement('hr');
+                divider.className = 'divider-element';
+                divider.style.backgroundColor = element.properties.color;
+                divider.style.height = element.properties.thickness;
+                content.appendChild(divider);
+                break;
+        }
+        
+        return content;
+    }
+
+    function updateElementPosition(elementId, e) {
+        const element = elements.find(el => el.id === elementId);
+        if (!element) return;
+
+        const canvas = document.getElementById('canvas');
+        const rect = canvas.getBoundingClientRect();
+        element.x = Math.max(0, e.clientX - rect.left - element.width / 2);
+        element.y = Math.max(0, e.clientY - rect.top - element.height / 2);
+
+        const div = document.getElementById(`element-${elementId}`);
+        div.style.left = element.x + 'px';
+        div.style.top = element.y + 'px';
+    }
+
+    function updateElementProperty(elementId, property, value) {
+        const element = elements.find(el => el.id === elementId);
+        if (element) {
+            element.properties[property] = value;
+        }
+    }
+
+    function deleteElement(elementId) {
+        elements = elements.filter(el => el.id !== elementId);
+        refreshCanvas();
+    }
+
+    function moveElement(elementId, direction) {
+        const index = elements.findIndex(el => el.id === elementId);
+        if (index === -1) return;
+
+        if (direction === 'up' && index > 0) {
+            [elements[index], elements[index - 1]] = [elements[index - 1], elements[index]];
+        } else if (direction === 'down' && index < elements.length - 1) {
+            [elements[index], elements[index + 1]] = [elements[index + 1], elements[index]];
+        }
+
+        refreshCanvas();
+    }
+
+    function editElement(elementId) {
+        const element = elements.find(el => el.id === elementId);
+        if (!element) return;
+
+        const modal = document.createElement('div');
+        modal.className = 'edit-modal';
+        modal.innerHTML = `
+            <div class="edit-modal-content">
+                <div class="edit-modal-header">
+                    <h3>Edit ${element.type.replace('_', ' ').toUpperCase()}</h3>
+                    <button onclick="closeEditModal()" class="close-btn">&times;</button>
+                </div>
+                <div class="edit-modal-body">
+                    ${getEditForm(element)}
+                </div>
+                <div class="edit-modal-footer">
+                    <button onclick="saveElementEdit('${elementId}')" class="btn btn-primary">Save</button>
+                    <button onclick="closeEditModal()" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    function getEditForm(element) {
+        switch(element.type) {
+            case 'text_short':
+                return `<label>Text:</label><input type="text" id="editText" value="${element.properties.text}">`;
+            case 'text_long':
+                return `<label>Text:</label><textarea id="editText" rows="4">${element.properties.text}</textarea>`;
+            case 'button':
+                return `
+                    <label>Text:</label><input type="text" id="editText" value="${element.properties.text}">
+                    <label>Link:</label><input type="url" id="editLink" value="${element.properties.link}">
+                    <label>Background Color:</label><input type="color" id="editBgColor" value="${element.properties.backgroundColor}">
+                    <label>Text Color:</label><input type="color" id="editTextColor" value="${element.properties.color}">
+                `;
+            case 'divider':
+                return `
+                    <label>Color:</label><input type="color" id="editColor" value="${element.properties.color}">
+                    <label>Thickness:</label><input type="range" id="editThickness" min="1" max="10" value="${parseInt(element.properties.thickness)}">
+                `;
+            default:
+                return '<p>No editable properties</p>';
+        }
+    }
+
+    function saveElementEdit(elementId) {
+        const element = elements.find(el => el.id === elementId);
+        if (!element) return;
+
+        switch(element.type) {
+            case 'text_short':
+            case 'text_long':
+                element.properties.text = document.getElementById('editText').value;
+                break;
+            case 'button':
+                element.properties.text = document.getElementById('editText').value;
+                element.properties.link = document.getElementById('editLink').value;
+                element.properties.backgroundColor = document.getElementById('editBgColor').value;
+                element.properties.color = document.getElementById('editTextColor').value;
+                break;
+            case 'divider':
+                element.properties.color = document.getElementById('editColor').value;
+                element.properties.thickness = document.getElementById('editThickness').value + 'px';
+                break;
+        }
+
+        refreshCanvas();
+        closeEditModal();
+    }
+
+    function closeEditModal() {
+        const modal = document.querySelector('.edit-modal');
+        if (modal) modal.remove();
+    }
+
+    function selectElement(elementId) {
+        // Remove previous selection
+        document.querySelectorAll('.canvas-element').forEach(el => el.classList.remove('selected'));
+        
+        // Select current element
+        document.getElementById(`element-${elementId}`).classList.add('selected');
+        selectedElement = elementId;
+    }
+
+    function uploadImage(elementId) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = function() {
+            if (this.files[0]) {
+                const formData = new FormData();
+                formData.append('file', this.files[0]);
+                
+                fetch('/api/upload_image', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateElementProperty(elementId, 'src', data.url);
+                        refreshCanvas();
+                    } else {
+                        alert('Failed to upload image: ' + data.error);
+                    }
+                });
+            }
+        };
+        input.click();
+    }
+
+    function refreshCanvas() {
+        const canvas = document.getElementById('canvas');
+        canvas.querySelectorAll('.canvas-element').forEach(el => el.remove());
+        elements.forEach(element => renderElement(element));
+    }
+
+    function clearCanvas() {
+        if (confirm('Are you sure you want to clear the canvas? This action cannot be undone.')) {
+            elements = [];
+            refreshCanvas();
+        }
+    }
+
+    // Auto-save functionality removed - manual save only
+
+    function savePortfolio() {
+        // Prevent multiple saves in progress
+        if (window.saveInProgress) {
+            return;
+        }
+        window.saveInProgress = true;
+        
+        const portfolioData = {
+            title: document.getElementById('portfolioTitle').value,
+            template: currentTemplate,
+            background_color: document.getElementById('backgroundColor').value,
+            elements: elements
+        };
+
+        fetch('/api/save_portfolio', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(portfolioData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            window.saveInProgress = false;
+            if (data.success) {
+                showSaveStatus();
+                // Redirect to homepage after saving
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
+            } else {
+                alert('Failed to save portfolio: ' + data.error);
+            }
+        })
+        .catch(error => {
+            window.saveInProgress = false;
+            console.error('Error:', error);
+            alert('Failed to save portfolio');
+        });
+    }
+
+    function showSaveStatus() {
+        const status = document.getElementById('saveStatus');
+        status.style.display = 'block';
+        setTimeout(() => {
+            status.style.display = 'none';
+        }, 3000);
+    }
+
+    function previewPortfolio() {
+        // Open preview in new tab
+        const portfolioData = {
+            title: document.getElementById('portfolioTitle').value,
+            template: currentTemplate,
+            background_color: document.getElementById('backgroundColor').value,
+            elements: elements
+        };
+        
+        // Store in session storage for preview
+        sessionStorage.setItem('previewData', JSON.stringify(portfolioData));
+        window.open('/preview', '_blank');
+    }
+
+    // Prevent default drag behavior on canvas
+    document.getElementById('canvas').addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+
+    document.getElementById('canvas').addEventListener('dragleave', function(e) {
+        this.classList.remove('drag-over');
+    });
+
+    // Click outside to deselect
+    document.getElementById('canvas').addEventListener('click', function(e) {
+        if (e.target === this) {
+            document.querySelectorAll('.canvas-element').forEach(el => el.classList.remove('selected'));
+            selectedElement = null;
+        }
+    });
+</script>
+{% endblock %}

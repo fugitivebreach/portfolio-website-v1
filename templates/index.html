@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Portfolio Hub{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        text-align: center;
+        padding: 4rem 0;
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+        border-radius: 16px;
+        border: 2px solid #00bfff;
+        margin-bottom: 3rem;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #00bfff;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        color: #cccccc;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .features-section {
+        margin: 4rem 0;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #00bfff;
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .feature-card {
+        background-color: #111111;
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 191, 255, 0.2);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #666;
+        margin-bottom: 1rem;
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        color: #00bfff;
+        margin-bottom: 1rem;
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 1rem;
+    }
+
+    .feature-description {
+        color: #cccccc;
+        line-height: 1.6;
+    }
+
+    .stats-section {
+        background-color: #111111;
+        border: 2px solid #00bfff;
+        border-radius: 16px;
+        padding: 3rem;
+        margin: 3rem 0;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        text-align: center;
+    }
+
+    .stat-item {
+        padding: 1rem;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #00bfff;
+        display: block;
+    }
+
+    .stat-label {
+        color: #cccccc;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+    }
+
+    .cta-section {
+        text-align: center;
+        padding: 4rem 0;
+        background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+        border-radius: 16px;
+        border: 2px solid #00bfff;
+        margin: 3rem 0;
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #00bfff;
+        margin-bottom: 1rem;
+    }
+
+    .cta-description {
+        font-size: 1.2rem;
+        color: #cccccc;
+        margin-bottom: 2rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .hero-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">Create Stunning Portfolios</h1>
+    <p class="hero-subtitle">
+        Build beautiful, professional portfolios with our drag-and-drop editor. 
+        Showcase your work, get reviews, and stand out from the crowd.
+    </p>
+    <div class="hero-buttons">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create Portfolio
+            </a>
+            <a href="{{ url_for('portfolios') }}" class="btn">
+                <i class="fas fa-eye"></i> Browse Portfolios
+            </a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary">
+                <i class="fab fa-discord"></i> Get Started
+            </a>
+            <a href="{{ url_for('portfolios') }}" class="btn">
+                <i class="fas fa-eye"></i> View Examples
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<section class="features-section">
+    <h2 class="section-title">Why Choose Portfolio Hub?</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-drag-drop"></i>
+            </div>
+            <h3 class="feature-title">Drag & Drop Editor</h3>
+            <p class="feature-description">
+                Easily create and customize your portfolio with our intuitive drag-and-drop interface. 
+                No coding required!
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-palette"></i>
+            </div>
+            <h3 class="feature-title">Multiple Templates</h3>
+            <p class="feature-description">
+                Choose from various professional templates designed for different industries and styles.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <h3 class="feature-title">Review System</h3>
+            <p class="feature-description">
+                Get feedback from the community with our built-in review and rating system.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fab fa-discord"></i>
+            </div>
+            <h3 class="feature-title">Discord Integration</h3>
+            <p class="feature-description">
+                Seamlessly login with your Discord account and connect with other creators.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <h3 class="feature-title">Responsive Design</h3>
+            <p class="feature-description">
+                Your portfolios look great on all devices - desktop, tablet, and mobile.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-cloud"></i>
+            </div>
+            <h3 class="feature-title">Cloud Storage</h3>
+            <p class="feature-description">
+                Your portfolios are safely stored in the cloud and accessible from anywhere.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="stats-section">
+    <div class="stats-grid">
+        <div class="stat-item">
+            <span class="stat-number" id="portfolio-count">0</span>
+            <div class="stat-label">Portfolios Created</div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="user-count">0</span>
+            <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="review-count">0</span>
+            <div class="stat-label">Reviews Given</div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="template-count">4</span>
+            <div class="stat-label">Templates Available</div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <h2 class="cta-title">Ready to Get Started?</h2>
+    <p class="cta-description">
+        Join thousands of creators who are already showcasing their work with Portfolio Hub.
+    </p>
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('create') }}" class="btn btn-primary">
+            <i class="fas fa-rocket"></i> Create Your First Portfolio
+        </a>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary">
+            <i class="fab fa-discord"></i> Sign Up Now
+        </a>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load and animate stats
+    fetch('/api/stats')
+        .then(response => response.json())
+        .then(data => {
+            animateNumber('portfolio-count', data.portfolios || 0);
+            animateNumber('user-count', data.users || 0);
+            animateNumber('review-count', data.reviews || 0);
+        })
+        .catch(error => {
+            console.error('Error loading stats:', error);
+            // Show 0 if API fails
+            document.getElementById('portfolio-count').textContent = '0';
+            document.getElementById('user-count').textContent = '0';
+            document.getElementById('review-count').textContent = '0';
+        });
+
+    function animateNumber(elementId, targetNumber) {
+        const element = document.getElementById(elementId);
+        const duration = 1500;
+        const steps = 50;
+        const increment = targetNumber / steps;
+        let current = 0;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= targetNumber) {
+                current = targetNumber;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current);
+        }, duration / steps);
+    }
+});
+</script>
+{% endblock %}

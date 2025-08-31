@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Portfolio Hub{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background-color: #000000;
+            border-bottom: 2px solid #00bfff;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #00bfff;
+            text-decoration: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            gap: 3rem;
+        }
+
+        .nav-tab {
+            position: relative;
+        }
+
+        .nav-tab a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tab a:hover,
+        .nav-tab a.active {
+            color: #000000;
+            background-color: #00bfff;
+            border-color: #00bfff;
+        }
+
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: 3rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #00bfff;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #00bfff;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #00bfff;
+            background-color: transparent;
+            color: #00bfff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: #00bfff;
+            color: #000000;
+        }
+
+        .btn-primary {
+            background-color: #00bfff;
+            color: #000000;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e90ff;
+        }
+
+        /* Flash messages */
+        .flash-messages {
+            margin: 1rem 0;
+        }
+
+        .flash-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 2px solid;
+        }
+
+        .flash-message.success {
+            background-color: rgba(34, 197, 94, 0.1);
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+
+        .flash-message.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* Main content */
+        .main-content {
+            min-height: calc(100vh - 80px);
+            padding: 2rem 0;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #111111;
+            border-top: 2px solid #00bfff;
+            padding: 2rem 0;
+            text-align: center;
+            color: #888888;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-tabs {
+                gap: 1rem;
+            }
+
+            .nav-tab a {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <a href="{{ url_for('index') }}" class="logo">
+                    <i class="fas fa-briefcase"></i> Portation
+                </a>
+                
+                <ul class="nav-tabs">
+                    <li class="nav-tab">
+                        <a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}class="active"{% endif %}>
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-tab">
+                        <a href="{{ url_for('portfolios') }}" {% if request.endpoint == 'portfolios' %}class="active"{% endif %}>
+                            <i class="fas fa-th-large"></i> Portfolios
+                        </a>
+                    </li>
+                    <li class="nav-tab">
+                        <a href="/create" {% if request.endpoint == 'create' %}class="active"{% endif %}>
+                            <i class="fas fa-plus"></i> Create
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-tab">
+                        <a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    {% if current_user.is_admin %}
+                    <li class="nav-tab">
+                        <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %}>
+                            <i class="fas fa-shield-alt"></i> Admin
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <li class="nav-tab">
+                        <a href="/login" {% if request.endpoint == 'login' %}class="active"{% endif %}>
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <div class="auth-section">
+                    {% if current_user.is_authenticated %}
+                        <div class="user-info">
+                            {% if current_user.avatar %}
+                                <img src="https://cdn.discordapp.com/avatars/{{ current_user.id }}/{{ current_user.avatar }}.png" 
+                                     alt="Avatar" class="user-avatar">
+                            {% endif %}
+                            <span>{{ current_user.username }}</span>
+                        </div>
+                        <a href="{{ url_for('logout') }}" class="btn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-primary">
+                            <i class="fab fa-discord"></i> Login with Discord
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            {% if message is iterable and message is not string %}
+                                <div class="flash-message {{ message[0] }}">
+                                    {{ message[1] }}
+                                </div>
+                            {% else %}
+                                <div class="flash-message info">
+                                    {{ message }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Portfolio Hub. Built with Flask and MongoDB.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

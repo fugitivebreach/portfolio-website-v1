@@ -1,0 +1,613 @@
+{% extends "base.html" %}
+
+{% block title %}{{ portfolio.title }} - Portfolio Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .portfolio-header {
+        background-color: #111111;
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .portfolio-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #00bfff;
+        margin-bottom: 0.5rem;
+    }
+
+    .portfolio-meta {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #cccccc;
+    }
+
+    .portfolio-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .portfolio-canvas {
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        min-height: 400px;
+        position: relative;
+    }
+
+    .portfolio-element {
+        position: relative;
+        color: #ffffff;
+        margin-bottom: 1.5rem;
+        width: 100%;
+    }
+
+    .element-text-short {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .element-text-long {
+        font-size: 1rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    .element-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .element-button {
+        background-color: #00bfff;
+        color: #000000;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .element-button:hover {
+        background-color: #1e90ff;
+        transform: translateY(-2px);
+    }
+
+    .element-divider {
+        width: 100%;
+        height: 2px;
+        background-color: #00bfff;
+        border: none;
+    }
+
+    .reviews-section {
+        margin-top: 3rem;
+    }
+
+    .reviews-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .reviews-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #00bfff;
+    }
+
+    .reviews-stats {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: #cccccc;
+    }
+
+    .overall-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .review-card {
+        background-color: #111111;
+        border: 2px solid #333333;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .reviewer-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .reviewer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #00bfff;
+    }
+
+    .reviewer-name {
+        color: #00bfff;
+        font-weight: 500;
+    }
+
+    .review-date {
+        color: #888888;
+        font-size: 0.9rem;
+    }
+
+    .review-rating {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .review-comment {
+        color: #cccccc;
+        line-height: 1.6;
+    }
+
+    .no-reviews {
+        text-align: center;
+        padding: 3rem;
+        color: #666666;
+    }
+
+    .no-reviews i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .portfolio-meta {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .portfolio-actions {
+            flex-direction: column;
+        }
+
+        .reviews-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+    }
+
+    /* Modal Styles */
+    .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: #111111;
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #333333;
+    }
+
+    .modal-header h3 {
+        color: #00bfff;
+        margin: 0;
+    }
+
+    .close {
+        color: #cccccc;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .close:hover {
+        color: #00bfff;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        color: #00bfff;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .star-rating {
+        display: flex;
+        gap: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .star-rating i {
+        font-size: 1.5rem;
+        color: #333333;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .star-rating i:hover,
+    .star-rating i.active {
+        color: #00bfff;
+    }
+
+    #reviewComment {
+        width: 100%;
+        min-height: 100px;
+        padding: 0.75rem;
+        background-color: #222222;
+        border: 2px solid #333333;
+        border-radius: 8px;
+        color: #ffffff;
+        resize: vertical;
+        box-sizing: border-box;
+    }
+
+    #reviewComment:focus {
+        outline: none;
+        border-color: #00bfff;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="portfolio-header">
+    <h1 class="portfolio-title">{{ portfolio.title }}</h1>
+    <div class="portfolio-meta">
+        <div class="meta-item">
+            <i class="fas fa-user"></i>
+            <span>{{ portfolio.username }}</span>
+        </div>
+        <div class="meta-item">
+            <i class="fas fa-palette"></i>
+            <span>{{ portfolio.template | title }} Template</span>
+        </div>
+        <div class="meta-item">
+            <i class="fas fa-calendar"></i>
+            <span>{{ portfolio.created_at.strftime('%B %d, %Y') if portfolio.created_at else 'Unknown' }}</span>
+        </div>
+        {% if reviews %}
+        <div class="meta-item">
+            <div class="overall-rating">
+                {% set avg_rating = (reviews | sum(attribute='rating') / reviews | length) | round %}
+                {% for i in range(1, 6) %}
+                    {% if i <= avg_rating %}
+                        <i class="fas fa-star" style="color: #00bfff;"></i>
+                    {% else %}
+                        <i class="fas fa-star" style="color: #333333;"></i>
+                    {% endif %}
+                {% endfor %}
+                <span>{{ "%.1f"|format(reviews | sum(attribute='rating') / reviews | length) }} ({{ reviews | length }} reviews)</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="portfolio-actions">
+        {% if current_user.is_authenticated and current_user.id == portfolio.user_id %}
+            <a href="{{ url_for('edit_portfolio', portfolio_id=portfolio._id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Portfolio
+            </a>
+        {% elif current_user.is_authenticated %}
+            <button class="btn btn-primary" onclick="openReviewModal('{{ portfolio._id }}', '{{ portfolio.title }}')">
+                <i class="fas fa-star"></i> Leave Review
+            </button>
+        {% endif %}
+        <button class="btn" onclick="sharePortfolio()">
+            <i class="fas fa-share"></i> Share
+        </button>
+    </div>
+</div>
+
+<div class="portfolio-canvas" id="portfolioCanvas">
+    {% for element in portfolio.elements %}
+        {% if element.type == 'text_short' %}
+            <div class="portfolio-element">
+                <div class="element-text-short">{{ element.properties.text }}</div>
+            </div>
+        {% elif element.type == 'text_long' %}
+            <div class="portfolio-element">
+                <div class="element-text-long">{{ element.properties.text }}</div>
+            </div>
+        {% elif element.type == 'image' and element.properties.src %}
+            <div class="portfolio-element">
+                <img src="{{ element.properties.src }}" alt="{{ element.properties.alt }}" class="element-image">
+            </div>
+        {% elif element.type == 'button' %}
+            <div class="portfolio-element">
+                <a href="{{ element.properties.link }}" class="element-button" target="_blank">{{ element.properties.text }}</a>
+            </div>
+        {% elif element.type == 'divider' %}
+            <div class="portfolio-element">
+                <hr class="element-divider" data-color="{{ element.properties.color }}" data-thickness="{{ element.properties.thickness }}">
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<script type="text/javascript">
+// Set portfolio canvas background and element styling
+document.addEventListener('DOMContentLoaded', function() {
+    var canvas = document.getElementById('portfolioCanvas');
+    canvas.style.backgroundColor = '{{ portfolio.background_color or "#000000" }}';
+    
+    var elements = canvas.querySelectorAll('.portfolio-element');
+    elements.forEach(function(el) {
+        // Remove absolute positioning data attributes - use natural flow
+        var divider = el.querySelector('.element-divider');
+        if (divider) {
+            divider.style.backgroundColor = divider.getAttribute('data-color');
+            divider.style.height = divider.getAttribute('data-thickness');
+        }
+    });
+});
+</script>
+
+<div class="reviews-section">
+    <div class="reviews-header">
+        <h2 class="reviews-title">Reviews</h2>
+        {% if reviews %}
+        <div class="reviews-stats">
+            <span>{{ reviews | length }} review{{ 's' if reviews | length != 1 else '' }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if reviews %}
+        {% for review in reviews %}
+        <div class="review-card">
+            <div class="review-header">
+                <div class="reviewer-info">
+                    <div class="reviewer-name">{{ review.username }}</div>
+                    <div class="review-date">{{ review.created_at.strftime('%B %d, %Y') if review.created_at else 'Unknown date' }}</div>
+                </div>
+                <div class="review-rating">
+                    {% for i in range(1, 6) %}
+                        {% if i <= review.rating %}
+                            <i class="fas fa-star" style="color: #00bfff;"></i>
+                        {% else %}
+                            <i class="fas fa-star" style="color: #333333;"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% if review.comment %}
+            <div class="review-comment">{{ review.comment }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-reviews">
+            <i class="fas fa-star"></i>
+            <h3>No reviews yet</h3>
+            <p>Be the first to review this portfolio!</p>
+            {% if current_user.is_authenticated and current_user.id != portfolio.user_id %}
+                <button class="btn btn-primary" onclick="openReviewModal('{{ portfolio._id }}', '{{ portfolio.title }}')" style="margin-top: 1rem;">
+                    <i class="fas fa-star"></i> Write First Review
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Review Modal (same as in portfolios.html) -->
+<div id="reviewModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Review Portfolio</h3>
+            <span class="close" onclick="closeReviewModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="review-form">
+                <div class="form-group">
+                    <label>Rating:</label>
+                    <div class="star-rating" id="starRating">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reviewComment">Comment (optional):</label>
+                    <textarea id="reviewComment" placeholder="Share your thoughts about this portfolio..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+                    <button class="btn" onclick="closeReviewModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPortfolioId = null;
+    let selectedRating = 0;
+
+    // Review modal functions
+    function openReviewModal(portfolioId, portfolioTitle) {
+        currentPortfolioId = portfolioId;
+        document.getElementById('reviewModal').style.display = 'flex';
+        document.querySelector('.modal-header h3').textContent = `Review: ${portfolioTitle}`;
+        
+        // Reset form
+        selectedRating = 0;
+        document.querySelectorAll('.star-rating i').forEach(star => star.classList.remove('active'));
+        document.getElementById('reviewComment').value = '';
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+        currentPortfolioId = null;
+        selectedRating = 0;
+    }
+
+    // Star rating functionality - wrapped in DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.star-rating i').forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+                updateStarRating();
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                highlightStars(rating);
+            });
+        });
+
+        const starRating = document.getElementById('starRating');
+        if (starRating) {
+            starRating.addEventListener('mouseleave', function() {
+                updateStarRating();
+            });
+        }
+
+        // Close modal when clicking outside
+        const reviewModal = document.getElementById('reviewModal');
+        if (reviewModal) {
+            reviewModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeReviewModal();
+                }
+            });
+        }
+    });
+
+    function highlightStars(rating) {
+        document.querySelectorAll('.star-rating i').forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#00bfff';
+            } else {
+                star.style.color = '#333333';
+            }
+        });
+    }
+
+    function updateStarRating() {
+        document.querySelectorAll('.star-rating i').forEach((star, index) => {
+            if (index < selectedRating) {
+                star.classList.add('active');
+                star.style.color = '#00bfff';
+            } else {
+                star.classList.remove('active');
+                star.style.color = '#333333';
+            }
+        });
+    }
+
+    function submitReview() {
+        if (selectedRating === 0) {
+            alert('Please select a rating');
+            return;
+        }
+
+        const comment = document.getElementById('reviewComment').value;
+
+        fetch('/api/submit_review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                portfolio_id: currentPortfolioId,
+                rating: selectedRating,
+                comment: comment
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Review submitted successfully!');
+                closeReviewModal();
+                location.reload();
+            } else {
+                alert(data.error || 'Failed to submit review');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to submit review');
+        });
+    }
+
+    function sharePortfolio() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ portfolio.title }}',
+                text: 'Check out this amazing portfolio!',
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Portfolio link copied to clipboard!');
+            });
+        }
+    }
+</script>
+{% endblock %}

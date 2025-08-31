@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolios - Portfolio Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .portfolios-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .portfolios-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #00bfff;
+        margin-bottom: 1rem;
+    }
+
+    .portfolios-subtitle {
+        color: #cccccc;
+        font-size: 1.1rem;
+    }
+
+    .portfolios-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .portfolio-card {
+        background-color: #111111;
+        border: 2px solid #333333;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .portfolio-card:hover {
+        border-color: #00bfff;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 191, 255, 0.2);
+    }
+
+    .portfolio-preview {
+        height: 200px;
+        background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666666;
+        font-size: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .portfolio-preview::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(0, 191, 255, 0.1) 50%, transparent 70%);
+    }
+
+    .portfolio-info {
+        padding: 1.5rem;
+    }
+
+    .portfolio-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 0.5rem;
+    }
+
+    .portfolio-author {
+        color: #00bfff;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .portfolio-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .rating {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .star {
+        color: #00bfff;
+        font-size: 0.9rem;
+    }
+
+    .star.empty {
+        color: #333333;
+    }
+
+    .rating-text {
+        color: #cccccc;
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+    }
+
+    .portfolio-template {
+        background-color: #222222;
+        color: #00bfff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .portfolio-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #666666;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #333333;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #cccccc;
+        margin-bottom: 1rem;
+    }
+
+    .filters {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        background-color: transparent;
+        border: 2px solid #333333;
+        color: #cccccc;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+        border-color: #00bfff;
+        color: #00bfff;
+    }
+
+    @media (max-width: 768px) {
+        .portfolios-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .portfolio-actions {
+            flex-direction: column;
+        }
+    }
+
+    /* Modal Styles */
+    .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: #111111;
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #333333;
+    }
+
+    .modal-header h3 {
+        color: #00bfff;
+        margin: 0;
+    }
+
+    .close {
+        color: #cccccc;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .close:hover {
+        color: #00bfff;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        color: #00bfff;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .star-rating {
+        display: flex;
+        gap: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .star-rating i {
+        font-size: 1.5rem;
+        color: #333333;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .star-rating i:hover,
+    .star-rating i.active {
+        color: #00bfff;
+    }
+
+    #reviewComment {
+        width: 100%;
+        min-height: 100px;
+        padding: 0.75rem;
+        background-color: #222222;
+        border: 2px solid #333333;
+        border-radius: 8px;
+        color: #ffffff;
+        resize: vertical;
+        box-sizing: border-box;
+    }
+
+    #reviewComment:focus {
+        outline: none;
+        border-color: #00bfff;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+
+    .empty-state-btn {
+        margin-top: 1rem;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="portfolios-header">
+    <h1 class="portfolios-title">Discover Portfolios</h1>
+    <p class="portfolios-subtitle">
+        Explore amazing portfolios created by our community, sorted by ratings
+    </p>
+</div>
+
+<div class="filters">
+    <button class="filter-btn active" data-filter="all">All Templates</button>
+    <button class="filter-btn" data-filter="modern">Modern</button>
+    <button class="filter-btn" data-filter="creative">Creative</button>
+    <button class="filter-btn" data-filter="professional">Professional</button>
+    <button class="filter-btn" data-filter="developer">Developer</button>
+</div>
+
+{% if portfolios %}
+<div class="portfolios-grid" id="portfolios-grid">
+    {% for portfolio in portfolios %}
+    <div class="portfolio-card" data-template="{{ portfolio.template }}" data-portfolio-url="{{ url_for('view_portfolio', portfolio_id=portfolio._id) }}" onclick="window.location.href=this.dataset.portfolioUrl">
+        <div class="portfolio-preview">
+            <i class="fas fa-briefcase"></i>
+        </div>
+        <div class="portfolio-info">
+            <h3 class="portfolio-title">{{ portfolio.title }}</h3>
+            <div class="portfolio-author">
+                <i class="fas fa-user"></i>
+                {{ portfolio.username }}
+            </div>
+            <div class="portfolio-stats">
+                <div class="rating">
+                    {% set rating = portfolio.avg_rating | round %}
+                    {% for i in range(1, 6) %}
+                        {% if i <= rating %}
+                            <i class="fas fa-star star"></i>
+                        {% else %}
+                            <i class="fas fa-star star empty"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <span class="rating-text">
+                        {% if portfolio.review_count > 0 %}
+                            {{ "%.1f"|format(portfolio.avg_rating) }} ({{ portfolio.review_count }} reviews)
+                        {% else %}
+                            No reviews yet
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="portfolio-template">{{ portfolio.template | title }}</div>
+            </div>
+            <div class="portfolio-actions">
+                <a href="{{ url_for('view_portfolio', portfolio_id=portfolio._id) }}" class="btn btn-small" onclick="event.stopPropagation()">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                {% if current_user.is_authenticated and current_user.id != portfolio.user_id %}
+                <button class="btn btn-small" onclick="event.stopPropagation(); openReviewModal('{{ portfolio._id }}', '{{ portfolio.title }}')">
+                    <i class="fas fa-star"></i> Review
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-folder-open"></i>
+    <h3>No portfolios yet</h3>
+    <p>Be the first to create a portfolio and share your work with the community!</p>
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('create') }}" class="btn btn-primary empty-state-btn">
+            <i class="fas fa-plus"></i> Create First Portfolio
+        </a>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary empty-state-btn">
+            <i class="fab fa-discord"></i> Login to Create
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Review Modal -->
+<div id="reviewModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Review Portfolio</h3>
+            <span class="close" onclick="closeReviewModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="review-form">
+                <div class="form-group">
+                    <label>Rating:</label>
+                    <div class="star-rating" id="starRating">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reviewComment">Comment (optional):</label>
+                    <textarea id="reviewComment" placeholder="Share your thoughts about this portfolio..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+                    <button class="btn" onclick="closeReviewModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPortfolioId = null;
+    let selectedRating = 0;
+
+    // Filter functionality
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active filter
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const filter = this.dataset.filter;
+            const cards = document.querySelectorAll('.portfolio-card');
+
+            cards.forEach(card => {
+                if (filter === 'all' || card.dataset.template === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Review modal functions
+    function openReviewModal(portfolioId, portfolioTitle) {
+        currentPortfolioId = portfolioId;
+        document.getElementById('reviewModal').classList.remove('hidden');
+        document.getElementById('reviewModal').style.display = 'flex';
+        document.querySelector('.modal-header h3').textContent = `Review: ${portfolioTitle}`;
+        
+        // Reset form
+        selectedRating = 0;
+        document.querySelectorAll('.star-rating i').forEach(star => star.classList.remove('active'));
+        document.getElementById('reviewComment').value = '';
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+        document.getElementById('reviewModal').classList.add('hidden');
+        currentPortfolioId = null;
+        selectedRating = 0;
+    }
+
+    // Star rating functionality - wrapped in DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.star-rating i').forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+                updateStarRating();
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                highlightStars(rating);
+            });
+        });
+
+        const starRating = document.getElementById('starRating');
+        if (starRating) {
+            starRating.addEventListener('mouseleave', function() {
+                updateStarRating();
+            });
+        }
+    });
+
+    function highlightStars(rating) {
+        document.querySelectorAll('.star-rating i').forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#00bfff';
+            } else {
+                star.style.color = '#333333';
+            }
+        });
+    }
+
+    function updateStarRating() {
+        document.querySelectorAll('.star-rating i').forEach((star, index) => {
+            if (index < selectedRating) {
+                star.classList.add('active');
+                star.style.color = '#00bfff';
+            } else {
+                star.classList.remove('active');
+                star.style.color = '#333333';
+            }
+        });
+    }
+
+    function submitReview() {
+        if (selectedRating === 0) {
+            alert('Please select a rating');
+            return;
+        }
+
+        const comment = document.getElementById('reviewComment').value;
+
+        fetch('/api/submit_review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                portfolio_id: currentPortfolioId,
+                rating: selectedRating,
+                comment: comment
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Review submitted successfully!');
+                closeReviewModal();
+                location.reload(); // Refresh to show updated ratings
+            } else {
+                alert(data.error || 'Failed to submit review');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to submit review');
+        });
+    }
+
+    // Close modal when clicking outside - wrapped in DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const reviewModal = document.getElementById('reviewModal');
+        if (reviewModal) {
+            reviewModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeReviewModal();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

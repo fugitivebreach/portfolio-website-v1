@@ -1,0 +1,574 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Portfolio Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .admin-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .admin-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #00bfff;
+        margin-bottom: 1rem;
+    }
+
+    .admin-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #333333;
+    }
+
+    .admin-tab {
+        padding: 1rem 2rem;
+        background: transparent;
+        border: none;
+        color: #cccccc;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .admin-tab.active,
+    .admin-tab:hover {
+        color: #00bfff;
+        border-bottom-color: #00bfff;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .search-section {
+        background: #111111;
+        border: 2px solid #333333;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 0.75rem;
+        background: #222222;
+        border: 2px solid #333333;
+        border-radius: 8px;
+        color: #ffffff;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #00bfff;
+    }
+
+    .user-card {
+        background: #111111;
+        border: 2px solid #333333;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid #00bfff;
+    }
+
+    .user-details h3 {
+        color: #00bfff;
+        margin: 0;
+    }
+
+    .user-details p {
+        color: #cccccc;
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
+    }
+
+    .user-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #dc3545;
+        color: #ffffff;
+    }
+
+    .btn-warning {
+        border-color: #ffc107;
+        color: #ffc107;
+    }
+
+    .btn-warning:hover {
+        background-color: #ffc107;
+        color: #000000;
+    }
+
+    .restriction-badge {
+        background: #dc3545;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+
+    .portfolio-delete-section {
+        background: #111111;
+        border: 2px solid #dc3545;
+        border-radius: 12px;
+        padding: 2rem;
+    }
+
+    .delete-form {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .form-group {
+        flex: 1;
+    }
+
+    .form-group label {
+        display: block;
+        color: #00bfff;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: #111111;
+        border: 2px solid #00bfff;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #333333;
+    }
+
+    .modal-header h3 {
+        color: #00bfff;
+        margin: 0;
+    }
+
+    .close {
+        color: #cccccc;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .close:hover {
+        color: #00bfff;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .restriction-form {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+    }
+
+    .checkbox-group label {
+        color: #cccccc;
+        margin: 0;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1 class="admin-title">Admin Panel</h1>
+        <p style="color: #cccccc;">Manage users, portfolios, and site content</p>
+    </div>
+
+    <div class="admin-tabs">
+        <button class="admin-tab active" onclick="showTab('users')">User Management</button>
+        <button class="admin-tab" onclick="showTab('portfolios')">Portfolio Management</button>
+    </div>
+
+    <!-- User Management Tab -->
+    <div id="users-tab" class="tab-content active">
+        <div class="search-section">
+            <h3 style="color: #00bfff; margin-bottom: 1rem;">Search Users</h3>
+            <div class="search-form">
+                <input type="text" id="userSearch" class="search-input" placeholder="Search by username or Discord ID...">
+                <button class="btn btn-primary" onclick="searchUsers()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <div id="userResults">
+            <!-- User search results will appear here -->
+        </div>
+    </div>
+
+    <!-- Portfolio Management Tab -->
+    <div id="portfolios-tab" class="tab-content">
+        <div class="portfolio-delete-section">
+            <h3 style="color: #dc3545; margin-bottom: 1rem;">Delete Portfolio</h3>
+            <div class="delete-form">
+                <div class="form-group">
+                    <label for="portfolioInput">Portfolio URL or ID:</label>
+                    <input type="text" id="portfolioInput" class="search-input" placeholder="Enter portfolio URL or ID...">
+                </div>
+                <button class="btn btn-danger" onclick="deletePortfolio()">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restriction Modal -->
+<div id="restrictionModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Manage User Restrictions</h3>
+            <span class="close" onclick="closeRestrictionModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="restriction-form">
+                <div class="form-group">
+                    <label for="restrictionReason">Reason for restriction:</label>
+                    <textarea id="restrictionReason" class="search-input" rows="3" placeholder="Enter reason for restriction..."></textarea>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="blockReviews">
+                    <label for="blockReviews">Block from creating reviews</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="blockPortfolios">
+                    <label for="blockPortfolios">Block from creating portfolios</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="blockSite">
+                    <label for="blockSite">Block from accessing the entire site</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="permanentRestriction">
+                    <label for="permanentRestriction">Make restriction permanent</label>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                    <button class="btn btn-danger" onclick="applyRestrictions()">Apply Restrictions</button>
+                    <button class="btn" onclick="closeRestrictionModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentUserId = null;
+
+    function showTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(tabName + '-tab').classList.add('active');
+    }
+
+    function searchUsers() {
+        const query = document.getElementById('userSearch').value.trim();
+        if (!query) {
+            alert('Please enter a search term');
+            return;
+        }
+
+        fetch('/api/admin/search_users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: query })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayUsers(data.users);
+            } else {
+                alert('Search failed: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Search failed');
+        });
+    }
+
+    function displayUsers(users) {
+        const resultsDiv = document.getElementById('userResults');
+        
+        if (users.length === 0) {
+            resultsDiv.innerHTML = '<p style="color: #666666; text-align: center; padding: 2rem;">No users found</p>';
+            return;
+        }
+
+        resultsDiv.innerHTML = users.map(user => `
+            <div class="user-card">
+                <div class="user-header">
+                    <div class="user-info">
+                        ${user.avatar ? `<img src="${user.avatar}" alt="Avatar" class="user-avatar">` : '<div class="user-avatar" style="background: #333;"></div>'}
+                        <div class="user-details">
+                            <h3>${user.username}</h3>
+                            <p>Discord ID: ${user.discord_id}</p>
+                            <p>Joined: ${new Date(user.created_at).toLocaleDateString()}</p>
+                            ${user.restrictions && Object.keys(user.restrictions).length > 0 ? 
+                                `<span class="restriction-badge">Restricted</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-small btn-warning" onclick="openRestrictionModal('${user._id}', '${user.username}')">
+                            <i class="fas fa-ban"></i> Restrict
+                        </button>
+                        ${user.restrictions && Object.keys(user.restrictions).length > 0 ? 
+                            `<button class="btn btn-small" onclick="removeRestrictions('${user._id}')">
+                                <i class="fas fa-unlock"></i> Unblock
+                            </button>` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function openRestrictionModal(userId, username) {
+        currentUserId = userId;
+        document.getElementById('restrictionModal').classList.remove('hidden');
+        document.getElementById('restrictionModal').style.display = 'flex';
+        document.querySelector('.modal-header h3').textContent = `Restrict User: ${username}`;
+        
+        // Reset form
+        document.getElementById('restrictionReason').value = '';
+        document.getElementById('blockReviews').checked = false;
+        document.getElementById('blockPortfolios').checked = false;
+        document.getElementById('blockSite').checked = false;
+        document.getElementById('permanentRestriction').checked = false;
+    }
+
+    function closeRestrictionModal() {
+        document.getElementById('restrictionModal').style.display = 'none';
+        document.getElementById('restrictionModal').classList.add('hidden');
+        currentUserId = null;
+    }
+
+    function applyRestrictions() {
+        if (!currentUserId) return;
+
+        const restrictions = {
+            reason: document.getElementById('restrictionReason').value,
+            block_reviews: document.getElementById('blockReviews').checked,
+            block_portfolios: document.getElementById('blockPortfolios').checked,
+            block_site: document.getElementById('blockSite').checked,
+            permanent: document.getElementById('permanentRestriction').checked
+        };
+
+        if (!restrictions.reason.trim()) {
+            alert('Please provide a reason for the restriction');
+            return;
+        }
+
+        fetch('/api/admin/restrict_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id: currentUserId,
+                restrictions: restrictions
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User restrictions applied successfully');
+                closeRestrictionModal();
+                // Refresh search results
+                searchUsers();
+            } else {
+                alert('Failed to apply restrictions: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to apply restrictions');
+        });
+    }
+
+    function removeRestrictions(userId) {
+        if (!confirm('Are you sure you want to remove all restrictions for this user?')) {
+            return;
+        }
+
+        fetch('/api/admin/remove_restrictions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User restrictions removed successfully');
+                searchUsers();
+            } else {
+                alert('Failed to remove restrictions: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to remove restrictions');
+        });
+    }
+
+    function deletePortfolio() {
+        const input = document.getElementById('portfolioInput').value.trim();
+        if (!input) {
+            alert('Please enter a portfolio URL or ID');
+            return;
+        }
+
+        let portfolioId = input;
+        
+        // Extract ID from URL if needed
+        if (input.includes('/view/')) {
+            portfolioId = input.split('/view/')[1];
+        }
+
+        if (!confirm(`Are you sure you want to delete portfolio ${portfolioId}? This action cannot be undone.`)) {
+            return;
+        }
+
+        fetch('/api/admin/delete_portfolio', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ portfolio_id: portfolioId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Portfolio deleted successfully');
+                document.getElementById('portfolioInput').value = '';
+            } else {
+                alert('Failed to delete portfolio: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to delete portfolio');
+        });
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('restrictionModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeRestrictionModal();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

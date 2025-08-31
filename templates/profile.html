@@ -1,0 +1,481 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Portfolio Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .username-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .user-tag {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #ffffff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<script>
+// Apply tag colors when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.user-tag[data-tag-color]').forEach(tag => {
+        const color = tag.getAttribute('data-tag-color');
+        if (color) {
+            tag.style.backgroundColor = color;
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-info">
+            {% if user.avatar %}
+                <img src="https://cdn.discordapp.com/avatars/{{ user.discord_id }}/{{ user.avatar }}.png" 
+                     alt="Avatar" class="profile-avatar">
+            {% else %}
+                <div class="profile-avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            {% endif %}
+            <div class="profile-details">
+                <div class="username-container">
+                    <h1>{{ user.username }}</h1>
+                    {% if current_user.tag %}
+                        <span class="user-tag" data-tag-color="{{ current_user.tag.color }}">
+                            {{ current_user.tag.name }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="profile-settings">
+                    <label for="profileVisibility">Profile Visibility:</label>
+                    <select id="profileVisibility" onchange="updateProfileVisibility()">
+                        <option value="public" {% if user.profile_visibility == 'public' %}selected{% endif %}>Public</option>
+                        <option value="private" {% if user.profile_visibility == 'private' %}selected{% endif %}>Private</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <a href="/profile/{{ user.id }}" class="btn btn-secondary">
+                <i class="fas fa-eye"></i> View Public Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-section">
+            <h3>Description</h3>
+            <div class="description-editor">
+                <textarea id="profileDescription" placeholder="Tell others about yourself..." 
+                         onchange="updateDescription()">{{ user.description }}</textarea>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <div class="section-header">
+                <h3>My Portfolios ({{ portfolios|length }})</h3>
+                <a href="/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create New
+                </a>
+            </div>
+            
+            <div class="portfolios-grid">
+                {% for portfolio in portfolios %}
+                <div class="portfolio-card">
+                    <div class="portfolio-header">
+                        <h4>{{ portfolio.title }}</h4>
+                        <div class="portfolio-actions">
+                            <a href="/edit/{{ portfolio._id }}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline" onclick="toggleDropdown('{{ portfolio._id }}')">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu" id="dropdown-{{ portfolio._id }}">
+                                    <a href="/portfolio/{{ portfolio._id }}" class="dropdown-item">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <button onclick="deletePortfolio('{{ portfolio._id }}')" class="dropdown-item delete-btn">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-preview" data-bg-color="{{ portfolio.background_color or '#000000' }}">
+                        <div class="portfolio-elements">
+                            {% for element in portfolio.elements[:3] %}
+                                <div class="element-preview">
+                                    {% if element.type == 'text_short' %}
+                                        <div class="text-preview">{{ (element.properties.text or '')[:30] }}...</div>
+                                    {% elif element.type == 'image' %}
+                                        <div class="image-preview">📷</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="portfolio-meta">
+                        <span class="template-badge">{{ portfolio.template }}</span>
+                        <span class="element-count">{{ portfolio.elements|length }} elements</span>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if portfolios|length == 0 %}
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h4>No portfolios yet</h4>
+                    <p>Create your first portfolio to get started!</p>
+                    <a href="/create" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Portfolio
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    border-radius: 15px;
+    border: 1px solid #333;
+}
+
+.profile-info {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #00bfff;
+}
+
+.profile-avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #00bfff;
+    border: 3px solid #00bfff;
+}
+
+.profile-details h1 {
+    margin: 0 0 1rem 0;
+    color: #00bfff;
+    font-size: 2rem;
+}
+
+.profile-settings {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.profile-settings label {
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+.profile-settings select {
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 0.25rem 0.5rem;
+}
+
+.profile-section {
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #333;
+}
+
+.profile-section h3 {
+    color: #00bfff;
+    margin-bottom: 1rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.description-editor textarea {
+    width: 100%;
+    min-height: 100px;
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 1rem;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.portfolios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.portfolio-card {
+    background: #2d2d2d;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #444;
+    transition: transform 0.2s ease;
+}
+
+.portfolio-card:hover {
+    transform: translateY(-2px);
+    border-color: #00bfff;
+}
+
+.portfolio-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+}
+
+.portfolio-header h4 {
+    margin: 0;
+    color: #fff;
+}
+
+.portfolio-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.portfolio-preview {
+    height: 120px;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-elements {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.element-preview {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: #ccc;
+}
+
+.portfolio-meta {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #ccc;
+}
+
+.template-badge {
+    background: #00bfff;
+    color: #000;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 5px;
+    min-width: 120px;
+    display: none;
+    z-index: 1000;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background: #444;
+}
+
+.dropdown-item.delete-btn:hover {
+    background: #dc3545;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #ccc;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #555;
+}
+
+.empty-state h4 {
+    margin-bottom: 0.5rem;
+    color: #fff;
+}
+</style>
+
+<script>
+function updateProfileVisibility() {
+    const visibility = document.getElementById('profileVisibility').value;
+    
+    fetch('/api/update_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            profile_visibility: visibility
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Profile visibility updated');
+        }
+    });
+}
+
+function updateDescription() {
+    const description = document.getElementById('profileDescription').value;
+    
+    fetch('/api/update_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            description: description
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Description updated');
+        }
+    });
+}
+
+function toggleDropdown(portfolioId) {
+    const dropdown = document.getElementById('dropdown-' + portfolioId);
+    dropdown.classList.toggle('show');
+    
+    // Close other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu.id !== 'dropdown-' + portfolioId) {
+            menu.classList.remove('show');
+        }
+    });
+}
+
+function deletePortfolio(portfolioId) {
+    if (confirm('Are you sure you want to delete this portfolio? This action cannot be undone.')) {
+        fetch('/api/delete_portfolio', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                portfolio_id: portfolioId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed to delete portfolio: ' + data.error);
+            }
+        });
+    }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
+
+// Apply background colors from data attributes when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.portfolio-preview[data-bg-color]').forEach(preview => {
+        const bgColor = preview.getAttribute('data-bg-color');
+        if (bgColor) {
+            preview.style.backgroundColor = bgColor;
+        }
+    });
+});
+</script>
+{% endblock %}

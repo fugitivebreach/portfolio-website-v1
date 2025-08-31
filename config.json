@@ -1,0 +1,60 @@
+{
+  "portfolio_templates": [
+    {
+      "id": "modern",
+      "name": "Modern Portfolio",
+      "description": "Clean and minimalist design with focus on content",
+      "preview_image": "/static/images/template_modern.png"
+    },
+    {
+      "id": "creative",
+      "name": "Creative Portfolio",
+      "description": "Bold and artistic layout for creative professionals",
+      "preview_image": "/static/images/template_creative.png"
+    },
+    {
+      "id": "professional",
+      "name": "Professional Portfolio",
+      "description": "Corporate-style layout perfect for business professionals",
+      "preview_image": "/static/images/template_professional.png"
+    },
+    {
+      "id": "developer",
+      "name": "Developer Portfolio",
+      "description": "Tech-focused design with code snippets and project showcases",
+      "preview_image": "/static/images/template_developer.png"
+    }
+  ],
+  "element_types": [
+    {
+      "type": "text_short",
+      "name": "Short Text",
+      "icon": "📝",
+      "description": "Single line text for titles and headers"
+    },
+    {
+      "type": "text_long",
+      "name": "Long Text",
+      "icon": "📄",
+      "description": "Multi-line text for descriptions and content"
+    },
+    {
+      "type": "image",
+      "name": "Image",
+      "icon": "🖼️",
+      "description": "Upload and display images (PNG, JPG, GIF)"
+    },
+    {
+      "type": "button",
+      "name": "Button",
+      "icon": "🔘",
+      "description": "Clickable button with custom text and link"
+    },
+    {
+      "type": "divider",
+      "name": "Divider",
+      "icon": "➖",
+      "description": "Visual separator between sections"
+    }
+  ]
+}
